@@ -1,0 +1,31 @@
+{
+  "name": "get-back-skills",
+  "id": "get-back-skills",
+  "owner": {
+    "name": "Panuakdet Suwannatat"
+  },
+  "metadata": {
+    "description": "A Claude Code skill that sounds an escalating alarm to call you back to the computer when Claude hits something only you can do",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "get-back-to-computer",
+      "source": "./",
+      "description": "When Claude needs a one-time code, a password, or a tap on your phone, it fills the room with a siren and a spoken message until you come back — and goes silent the instant you type",
+      "version": "1.0.0",
+      "author": {
+        "name": "Panuakdet Suwannatat"
+      },
+      "keywords": [
+        "alarm",
+        "notification",
+        "macos",
+        "2fa",
+        "attention",
+        "workflow"
+      ],
+      "category": "productivity"
+    }
+  ]
+}
