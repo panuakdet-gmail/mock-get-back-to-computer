@@ -1,7 +1,7 @@
 {
   "name": "get-back-to-computer",
   "description": "Summon yourself back to the computer with an escalating audible alarm — a siren of macOS system sounds plus a spoken message — when Claude reaches a point it cannot pass without you. You name the condition to wait for; Claude watches for it, fires the alarm, and the alarm dies the instant you type anything.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Panuakdet Suwannatat"
   },

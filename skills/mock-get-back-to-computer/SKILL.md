@@ -7,7 +7,10 @@ description: >-
   approve, a device to touch, a credential only they can type. The user names
   the condition to wait for; Claude watches for it, fires the alarm, and the
   alarm dies the instant the user types anything. The spoken message is drawn
-  from context, falling back to "get back to the computer".
+  from context, falling back to "get back to the computer", and each round also
+  says how long the alarm has been waiting. The alarm manages the system output
+  volume so it cannot fail silently on a muted or quiet Mac, escalating the
+  level as the wait drags on and restoring it afterwards.
   MANUAL TRIGGER ONLY: apply when the user invokes /mock-get-back-to-computer or
   explicitly asks for this alarm by name. Do NOT apply automatically whenever a
   task needs human input — most waits do not warrant filling the room with a
@@ -22,7 +25,7 @@ The bargain is deliberate: an alarm is rude, so it must be **asked for**, must f
 
 ## Requirements
 
-macOS only — it relies on `afplay` and `say`. No Homebrew packages, no network.
+macOS only — it relies on `afplay`, `say`, and `osascript`. No Homebrew packages, no network.
 
 The instant-stop behaviour depends on a hook registered in `~/.claude/settings.json`:
 
@@ -38,6 +41,20 @@ The instant-stop behaviour depends on a hook registered in `~/.claude/settings.j
 The harness runs that on every prompt submission, which is why the alarm dies even while Claude is blocked inside a long tool call. **If the hook is missing, install it before using the skill** — use the `update-config` skill rather than hand-editing the JSON.
 
 Unlike most skills here, `assets/alarm-start.sh` and `assets/alarm-stop.sh` **run in place and must not be copied elsewhere** — the hook hard-codes one absolute path, and a second copy would drift out of sync with it. Register only `UserPromptSubmit`; a `Stop` hook would kill the alarm seconds after starting it.
+
+## What it does to your volume
+
+An alarm playing into a muted Mac is the worst outcome this skill has: it looks like it worked, and nobody heard it. `afplay -v` and `say`'s `[[volm]]` cannot rescue that — both are relative to the system level — so the alarm manages the system output volume directly.
+
+- **Unmutes** at the start, and raises the level if it is below the ramp's floor.
+- **Escalates** with the wait: 55% for the first minute, 65% to three minutes, 75% to six, then 85% and hold. The ceiling is 85 on purpose — the top of the scale distorts small speakers, which makes the speech *less* intelligible, not more.
+- **Never turns the user down.** Already at 90%? It stays at 90%.
+- **Backs off when a human reacts.** If the level drops below what the alarm last set, someone turned the knob: that becomes the new ceiling and the escalation stops there. A mute mid-alarm means "quiet" — the alarm stops touching audio entirely for the rest of the run and leaves the mute in place.
+- **Puts it back.** The original level and mute state are restored when the alarm stops. `alarm-stop.sh` restores them too, from a file in the state directory, so a `kill -9` or a crash cannot leave the Mac loud.
+
+If the output device does not report a numeric level (`missing value`), the alarm leaves volume alone and plays at whatever is set.
+
+**Volume is per output device, and that is the one failure this cannot fix.** If audio is routed to headphones on the desk or a speaker in another room, no level is loud enough in the right place. That is what makes a `PushNotification` alongside the alarm worth sending.
 
 ## Argument convention
 
@@ -85,13 +102,20 @@ Whatever you choose, **cover the failure path too**. A watcher that only matches
 assets/alarm-start.sh "<the spoken message>" [max_minutes]
 ```
 
+It handles volume itself — nothing to pass, nothing to check first.
+
+From the second minute on, every spoken round appends how long it has been
+waiting — "Approve the login on your phone. Waiting 7 minutes." — so a user
+walking in knows whether they missed it by seconds or by an hour. Nothing to
+pass in; the script times itself.
+
 It detaches and **returns immediately**, printing the process-group id. Do **not** wrap it in `run_in_background` and do not wait on it.
 
 Consider sending a `PushNotification` alongside it: sound reaches the next room, a push reaches the next building.
 
 ### 4. Say why, on screen
 
-Print one line naming exactly what you need, including any code or value the user must read back. Someone walking in cold should learn what is wanted without scrolling. Then stop talking — a returning user does not want a wall of text between them and the thing that is waiting.
+Print one line naming exactly what you need, including any code or value the user must read back, and note the wall-clock time the alarm started so the elapsed figure spoken aloud has a written counterpart. If the alarm raised the volume or unmuted, say so in the same place — silent audio changes are the kind of thing that makes people distrust a tool. Someone walking in cold should learn what is wanted without scrolling. Then stop talking — a returning user does not want a wall of text between them and the thing that is waiting.
 
 ### 5. Stand down
 

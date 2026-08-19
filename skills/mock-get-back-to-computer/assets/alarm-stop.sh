@@ -7,6 +7,10 @@
 #     Claude's context, and chatter here would pollute every single prompt)
 #   * it always exits 0 and finishes in milliseconds
 #
+# It also restores the system output volume that alarm-start.sh raised. The
+# alarm restores that itself on the normal path; this is the backstop for a
+# kill -9, a crash, or a reboot that left the Mac loud.
+#
 # Takes no arguments. Safe to run when no alarm exists.
 
 STATE="$HOME/.claude/.get-back-alarm"
@@ -26,6 +30,19 @@ for f in "$STATE"/*.pgid; do
     # say down with the loop. Failure is normal here — a stale file just means
     # the alarm already ended.
     kill -TERM -"$pgid" 2>/dev/null
+    rm -f "$f"
+done
+
+# Volume last, so a still-dying alarm cannot raise it again after we put it
+# back. The file holds "<level> <muted>" as they were before the alarm began.
+for f in "$STATE"/*.vol; do
+    [ -e "$f" ] || continue
+    read -r vol muted < "$f"
+    case "$vol" in
+        ''|*[!0-9]*) rm -f "$f"; continue ;;
+    esac
+    osascript -e "set volume output volume $vol" 2>/dev/null
+    [ "$muted" = true ] && osascript -e 'set volume with output muted' 2>/dev/null
     rm -f "$f"
 done
 

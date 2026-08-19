@@ -19,9 +19,9 @@ It is **manual only**, and that is the whole bargain. An alarm is rude, so Claud
 ## What you need
 
 - **[Claude Code](https://claude.com/claude-code)** — Anthropic's assistant for your terminal. Install it first; nothing here works without it.
-- **A Mac.** The alarm is built on two programs that come with macOS: `afplay` (plays a sound file) and `say` (reads text aloud). There is nothing to install and nothing to buy, but there is also no Windows or Linux version.
+- **A Mac.** The alarm is built on three programs that come with macOS: `afplay` (plays a sound file), `say` (reads text aloud), and `osascript` (which is how it turns the volume up). There is nothing to install and nothing to buy, but there is also no Windows or Linux version.
 
-Speakers turned up, obviously. An alarm you cannot hear from the next room is not an alarm.
+You do **not** need to remember to turn the speakers up — the alarm does that itself, and puts your volume back afterwards. See [Your volume](#your-volume).
 
 ## Installing
 
@@ -137,9 +137,22 @@ Three sound files that ship with macOS — `Sosumi`, `Basso`, `Submarine`, `Glas
 | 4–8 | 6 beats | two voices | 3 seconds |
 | 9+ | 8 beats | two voices | 1 second |
 
+From the second minute onward the voice also tells you **how long it has been waiting** — "Approve the login on your phone. Waiting 7 minutes." So when you walk in you know straight away whether you missed it by seconds or by an hour.
+
 The spoken line is written for someone who cannot see the screen, so it says what to *do* rather than what happened — "Approve the login on your phone", not "authentication pending". Short codes get spelled out in the NATO alphabet, because text-to-speech mangles `A7K` but sails through "Alpha Seven Kilo". Secrets are never spoken: passwords, tokens, and full account numbers stay on the screen where only you can see them. When there is genuinely nothing specific to say, the voice falls back to *get back to the computer*.
 
 When you arrive, the screen carries the detail — the code to read back, the button to press — in one line, without a wall of text between you and the thing that is waiting.
+
+## Your volume
+
+An alarm playing into a muted Mac is the worst thing this skill could do: it looks like it worked, and nobody heard a sound. So the alarm takes charge of the system volume for as long as it is running.
+
+- **It unmutes and turns you up** if you are below its floor, and **escalates** as the wait drags on: 55% for the first minute, 65% up to three minutes, 75% up to six, then 85% and no higher. The top of the scale is left alone on purpose — it distorts small speakers, which makes the speech *harder* to understand, not easier.
+- **It never turns you down.** Already sitting at 90%? It stays at 90%.
+- **It backs off the moment you react.** Reach over and turn the volume down and the alarm takes that as its new ceiling and stops climbing. Mute it and it stops touching your audio altogether and leaves the mute alone — you asked for quiet.
+- **It puts everything back.** Your original level and mute state are restored when the alarm stops, both by the alarm itself and again by the stop script, so a crash cannot leave your Mac loud.
+
+The one thing no volume setting can fix is **where the sound comes out**. If your Mac is playing to headphones on the desk or a speaker in another room, no level is loud enough in the right place — that is why Claude may also send a push notification alongside the siren.
 
 ## The rules it follows while you are away
 
@@ -150,13 +163,13 @@ When you arrive, the screen carries the detail — the code to read back, the bu
 
 ## What it produces
 
-Nothing on disk except one short-lived marker file per running alarm, under `~/.claude/.get-back-alarm/`, which the stop script deletes. No network calls, no accounts, no telemetry.
+Nothing on disk except two short-lived files per running alarm, under `~/.claude/.get-back-alarm/`: a marker naming the running alarm, and a note of the volume and mute state to restore. Both are deleted when the alarm stops. No network calls, no accounts, no telemetry.
 
 ```
 skills/mock-get-back-to-computer/
 ├── SKILL.md              the instructions Claude follows
 └── assets/
-    ├── alarm-start.sh    starts the escalating alarm, detaches, returns instantly
+    ├── alarm-start.sh    starts the escalating alarm, manages the volume, returns instantly
     └── alarm-stop.sh     silences every running alarm — this is what the hook runs
 ```
 
