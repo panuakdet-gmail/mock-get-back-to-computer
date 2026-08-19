@@ -152,7 +152,7 @@ An alarm playing into a muted Mac is the worst thing this skill could do: it loo
 - **It backs off the moment you react.** Reach over and turn the volume down and the alarm takes that as its new ceiling and stops climbing. Mute it and it stops touching your audio altogether and leaves the mute alone — you asked for quiet.
 - **It puts everything back.** Your original level and mute state are restored when the alarm stops, both by the alarm itself and again by the stop script, so a crash cannot leave your Mac loud.
 
-The one thing no volume setting can fix is **where the sound comes out**. If your Mac is playing to headphones on the desk or a speaker in another room, no level is loud enough in the right place — that is why Claude may also send a push notification alongside the siren.
+The one thing no volume setting can fix is **where the sound comes out**. If your Mac is playing to headphones on the desk or a speaker in another room, no level is loud enough in the right place. The alarm is sound and nothing else — there is no second channel to fall back on.
 
 ## The rules it follows while you are away
 

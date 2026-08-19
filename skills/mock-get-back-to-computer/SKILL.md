@@ -54,7 +54,7 @@ An alarm playing into a muted Mac is the worst outcome this skill has: it looks 
 
 If the output device does not report a numeric level (`missing value`), the alarm leaves volume alone and plays at whatever is set.
 
-**Volume is per output device, and that is the one failure this cannot fix.** If audio is routed to headphones on the desk or a speaker in another room, no level is loud enough in the right place. That is what makes a `PushNotification` alongside the alarm worth sending.
+**Volume is per output device, and that is the one failure this cannot fix.** If audio is routed to headphones on the desk or a speaker in another room, no level is loud enough in the right place. Say so on screen when you notice it; the alarm has no second channel.
 
 ## Argument convention
 
@@ -110,8 +110,6 @@ walking in knows whether they missed it by seconds or by an hour. Nothing to
 pass in; the script times itself.
 
 It detaches and **returns immediately**, printing the process-group id. Do **not** wrap it in `run_in_background` and do not wait on it.
-
-Consider sending a `PushNotification` alongside it: sound reaches the next room, a push reaches the next building.
 
 ### 4. Say why, on screen
 
