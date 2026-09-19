@@ -19,13 +19,14 @@ It is **manual only**, and that is the whole bargain. An alarm is rude, so Claud
 ## What you need
 
 - **[Claude Code](https://claude.com/claude-code)** — Anthropic's assistant for your terminal. Install it first; nothing here works without it.
-- **A Mac.** The alarm is built on three programs that come with macOS: `afplay` (plays a sound file), `say` (reads text aloud), and `osascript` (which is how it turns the volume up). There is nothing to install and nothing to buy, but there is also no Windows or Linux version.
+- **A Mac.** The alarm is built on three programs that come with macOS: `afplay` (plays a sound file), `say` (reads text aloud), and `osascript` (which is how it turns the volume up). There is nothing to install and nothing to buy.
+- **Or Windows, at your own risk.** There is a Windows version, but it has never been tested. See [Windows](#windows). There is no Linux version.
 
 You do **not** need to remember to turn the speakers up — the alarm does that itself, and puts your volume back afterwards. See [Your volume](#your-volume).
 
 ## Installing
 
-The alarm needs Claude Code on a Mac, so there is no option for other agents. It has two parts: the **skill** itself, and one small **hook**, a line of configuration that lets the alarm stop the instant you type. Option 1 sets up both. Pick one option.
+The alarm needs Claude Code, so there is no option for other agents. It has two parts: the **skill** itself, and one small **hook**, a line of configuration that lets the alarm stop the instant you type. Option 1 sets up both. Pick one option.
 
 ### Option 1 — ask Claude Code to do it
 
@@ -39,7 +40,7 @@ Please install the Claude Code skills from https://github.com/panuakdet-gmail/mo
    - If there is none, copy the folder there.
    - If there is one, and every file in it matches a version that was once published in this repository, replace it with the new version.
    - If there is one, and it matches no published version, I have edited it. First move my copy to ~/.claude/skill-backups/<folder name>-<today's date>/. Then install the new version, show me what I had changed, and offer to merge my changes into it.
-3. Read the installed SKILL.md and register the UserPromptSubmit hook it describes, pointing at ~/.claude/skills/mock-get-back-to-computer/assets/alarm-stop.sh. If that hook is already registered, leave it alone.
+3. Read the installed SKILL.md and register the UserPromptSubmit hook it describes, pointing at ~/.claude/skills/mock-get-back-to-computer/assets/alarm-stop.sh (on Windows, alarm-stop.ps1, run through powershell.exe as SKILL.md describes). If that hook is already registered, leave it alone.
 4. Delete the temporary download and tell me what you installed or updated.
 ```
 
@@ -62,7 +63,7 @@ Then set up the hook, as described in **The hook** below.
 
 ### Option 3 — copy the folder yourself
 
-In a terminal:
+On a Mac, in a terminal:
 
 ```bash
 git clone https://github.com/panuakdet-gmail/mock-get-back-to-computer.git
@@ -90,6 +91,12 @@ Add it to `~/.claude/settings.json`:
 ```
 
 Replace the path with wherever the file actually landed — `~/.claude/skills/…` if you installed by hand, or the plugin's own folder under `~/.claude/plugins/` if you installed as a plugin. It must be the full path, starting with `/`.
+
+On Windows, the command is:
+
+```
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:/Users/<you>/.claude/skills/mock-get-back-to-computer/assets/alarm-stop.ps1"
+```
 
 Easiest way to get this right, whichever option you used:
 
@@ -178,8 +185,17 @@ skills/mock-get-back-to-computer/
 ├── SKILL.md              the instructions Claude follows
 └── assets/
     ├── alarm-start.sh    starts the escalating alarm, manages the volume, returns instantly
-    └── alarm-stop.sh     silences every running alarm — this is what the hook runs
+    ├── alarm-stop.sh     silences every running alarm — this is what the hook runs
+    ├── alarm-start.ps1   the same two jobs on Windows (untested)
+    ├── alarm-stop.ps1
+    └── win-audio.ps1     Windows volume control, used by both .ps1 scripts
 ```
+
+## Windows
+
+The Windows version is offered **as a courtesy, with no guarantee**. It was written without a Windows machine and has never been run. It tries to do everything the Mac version does, using sounds, a voice, and a notification that come with Windows.
+
+The skill tells Claude Code that it is responsible for making the alarm work on your machine. The first time you use it, Claude Code plays a short test alarm and asks what you heard. If a part does not work, it fixes it or drops it, so you end up with a simpler alarm rather than none, for example a siren and a notification without the voice.
 
 ## Credits
 

@@ -10,7 +10,8 @@ description: >-
   from context, falling back to "get back to the computer", and each round also
   says how long the alarm has been waiting. The alarm manages the system output
   volume so it cannot fail silently on a muted or quiet Mac, escalating the
-  level as the wait drags on and restoring it afterwards.
+  level as the wait drags on and restoring it afterwards. Built for macOS; a
+  best-effort, untested Windows port ships alongside it.
   MANUAL TRIGGER ONLY: apply when the user invokes /mock-get-back-to-computer or
   explicitly asks for this alarm by name. Do NOT apply automatically whenever a
   task needs human input — most waits do not warrant filling the room with a
@@ -25,7 +26,9 @@ The bargain is deliberate: an alarm is rude, so it must be **asked for**, must f
 
 ## Requirements
 
-macOS only — it relies on `afplay`, `say`, and `osascript`. No Homebrew packages, no network.
+Built for macOS — it relies on `afplay`, `say`, and `osascript`. No Homebrew packages, no network.
+
+**On Windows, read [Windows](#windows) first.** There is a PowerShell port, but nobody has tested it.
 
 The instant-stop behaviour depends on a hook registered in `~/.claude/settings.json`:
 
@@ -37,6 +40,8 @@ The instant-stop behaviour depends on a hook registered in `~/.claude/settings.j
   ]
 }
 ```
+
+On Windows the command is `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:/absolute/path/to/assets/alarm-stop.ps1"` instead.
 
 The harness runs that on every prompt submission, which is why the alarm dies even while Claude is blocked inside a long tool call. **If the hook is missing, install it before using the skill** — use the `update-config` skill rather than hand-editing the JSON.
 
@@ -102,6 +107,12 @@ Whatever you choose, **cover the failure path too**. A watcher that only matches
 assets/alarm-start.sh "<the spoken message>" [max_minutes]
 ```
 
+On Windows:
+
+```bash
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "<skill folder>/assets/alarm-start.ps1" "<the spoken message>" [max_minutes]
+```
+
 It handles volume itself — nothing to pass, nothing to check first.
 
 From the second minute on, every spoken round appends how long it has been
@@ -122,6 +133,30 @@ The hook silences the alarm the moment the user types. **You do not need to stop
 When they answer, open with what you needed. Do not recap the alarm, apologise for the noise, or narrate the wait.
 
 If the noise continues after the user has spoken, the hook is broken. **Say so plainly and offer to repair it** — do not paper over it by calling `alarm-stop.sh` on every turn.
+
+## Windows
+
+The Windows port is `assets/alarm-start.ps1`, `assets/alarm-stop.ps1`, and `assets/win-audio.ps1` (volume control, used by both). **It was written without a Windows machine and has never been run.** The author provides it as a courtesy, not a guarantee. **You, the agent on this machine, are responsible for making it work.**
+
+It mirrors the Mac version: a siren from the `.wav` files in `C:\Windows\Media`, speech through the voice built into Windows, the same volume increases and restore, and one Windows notification at the start. It must run under Windows PowerShell 5.1 (`powershell.exe`), not PowerShell 7 (`pwsh`), which lacks the speech library; the launcher handles that itself.
+
+**Test it once, with the user present, before relying on it.** The first time this skill is used on a Windows machine, or right after installing it:
+
+1. Check the hook is registered, and register it if not.
+2. Start the alarm with a short test message, for example `this is a test`, and a cap of `1`.
+3. Ask the user: did they hear the siren, did they hear the voice, did a notification appear? Then have them type anything, and ask whether it stopped and whether their volume went back to where it was.
+4. Fix whatever failed, by editing the scripts on this machine, and test again.
+
+**If a part cannot be made to work, simplify rather than give up.** An alarm that does less is far better than none. Drop parts in this order, keeping everything that still works:
+
+- Volume control fails → remove it and play at the current volume. Tell the user to keep their speakers up.
+- Speech fails → siren and notification only. Show the message on screen instead.
+- The `.wav` files do not play → console beeps (already the built-in fallback), or any sound you can make play.
+- No sound at all → a notification or a pop-up window, repeated until the user types.
+- The alarm dies as soon as the command that launched it returns → start it some other way that outlives the command, for example through `cmd /c start`.
+- The hook does not stop it → fix the hook first. Without it, the alarm runs until its time limit.
+
+Keep the spirit of the Mac version: loud enough to be noticed from another room, escalating, and silent the instant the user types. Tell the user plainly which parts work on their machine and which you dropped.
 
 ## Rules
 
