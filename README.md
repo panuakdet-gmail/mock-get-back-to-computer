@@ -25,45 +25,53 @@ You do **not** need to remember to turn the speakers up — the alarm does that 
 
 ## Installing
 
-There are two parts: the **skill** itself, and one small **hook** — a line of configuration that lets the alarm stop the instant you type. Option 1 does both for you.
+The alarm needs Claude Code on a Mac, so there is no option for other agents. It has two parts: the **skill** itself, and one small **hook**, a line of configuration that lets the alarm stop the instant you type. Option 1 sets up both. Pick one option.
 
 ### Option 1 — ask Claude Code to do it
 
-The easiest route, and it needs no terminal knowledge at all. Open Claude Code in any folder and paste this:
+This is the easiest way, and you do not need a terminal. Open Claude Code and paste this:
 
 ```
-Install the Claude Code skill from https://github.com/panuakdet-gmail/mock-get-back-to-computer
-by adding it as a plugin marketplace, then install the "get-back-to-computer" plugin from it.
-Afterwards, read that skill's SKILL.md and register the UserPromptSubmit hook it describes,
-pointing at the installed copy of assets/alarm-stop.sh.
+Please install the Claude Code skills from https://github.com/panuakdet-gmail/mock-get-back-to-computer.
+
+1. Download the repository, with its full history, to a temporary folder.
+2. For each folder inside its skills/ folder, look for a folder with the same name in ~/.claude/skills/.
+   - If there is none, copy the folder there.
+   - If there is one, and every file in it matches a version that was once published in this repository, replace it with the new version.
+   - If there is one, and it matches no published version, I have edited it. First move my copy to ~/.claude/skill-backups/<folder name>-<today's date>/. Then install the new version, show me what I had changed, and offer to merge my changes into it.
+3. Read the installed SKILL.md and register the UserPromptSubmit hook it describes, pointing at ~/.claude/skills/mock-get-back-to-computer/assets/alarm-stop.sh. If that hook is already registered, leave it alone.
+4. Delete the temporary download and tell me what you installed or updated.
 ```
 
-Claude Code will ask your permission before it changes anything.
+Claude Code asks your permission before it changes anything. When it has finished, restart Claude Code.
 
-### Option 2 — the built-in commands
+**To update later**, paste the same prompt again. If you changed the skill yourself, your version is saved first, and Claude Code offers to merge your changes into the new one.
 
-Inside Claude Code, run these two:
+### Option 2 — install as a plugin
+
+Choose this if you want Claude Code to handle updates for you. Inside Claude Code, run:
 
 ```
 /plugin marketplace add panuakdet-gmail/mock-get-back-to-computer
 /plugin install get-back-to-computer@get-back-skills
 ```
 
-The `plugin@marketplace` form is how Claude Code names a plugin: `get-back-to-computer` is the plugin, `get-back-skills` is the collection it came from.
+To update later, run `/plugin marketplace update get-back-skills`. Do not also use Option 1, otherwise the skill is installed twice.
 
-Then set up the hook — see **The hook** below.
+Then set up the hook, as described in **The hook** below.
 
-### Option 3 — by hand
+### Option 3 — copy the folder yourself
 
-Copy the skill folder into your personal skills directory:
+In a terminal:
 
 ```bash
 git clone https://github.com/panuakdet-gmail/mock-get-back-to-computer.git
+mkdir -p ~/.claude/skills
 cp -R mock-get-back-to-computer/skills/mock-get-back-to-computer ~/.claude/skills/
 chmod +x ~/.claude/skills/mock-get-back-to-computer/assets/*.sh
 ```
 
-Skills are read when a session starts, so restart Claude Code afterwards. Then set up the hook.
+Then restart Claude Code and set up the hook. To update, delete the downloaded `mock-get-back-to-computer` folder and run the same commands again. This replaces the installed folder, so any changes you made to it are lost.
 
 ### The hook
 
